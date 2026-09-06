@@ -1,0 +1,9 @@
+python-dotenv==1.2.3
+pydantic
+langgraph
+langchain
+langchain-core
+langchain-community
+langchain-google-genai
+python-dotenv
+streamlit
