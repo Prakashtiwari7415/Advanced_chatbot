@@ -14,7 +14,7 @@ llm = ChatGoogleGenerativeAI(
 )
 
 class ChatState(TypedDict):
-    messages: Annotated[list[BaseMessage], add_messages]
+    messages: Annotated[list[BaseMessage], add_messages]  ##add_masseges is a resucer to handle linearity of messages
 
 def chat_node(state: ChatState):
     messages = state['messages']
