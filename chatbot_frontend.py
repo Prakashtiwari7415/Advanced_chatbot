@@ -196,7 +196,7 @@ if user_input:
     st.session_state['message_history'].append({'role': 'user', 'content': user_input})
     st.markdown(
         f'<div class="chat-bubble user-bubble">🧑‍💻 <b>You:</b><br>{user_input}</div>', 
-        unsafe_allowed_html=True
+        unsafe_allow_html=True
     )
 
     CONFIG = {
@@ -211,7 +211,7 @@ if user_input:
     # Render the bouncing dots animation while initializing the backend stream connection
     typing_placeholder.markdown(
         '<div class="typing-container">🤖 &nbsp; <span class="dot"></span><span class="dot"></span><span class="dot"></span></div>', 
-        unsafe_allowed_html=True
+        unsafe_allow_html=True
     )
 
     # 3. Stream the Assistant response
