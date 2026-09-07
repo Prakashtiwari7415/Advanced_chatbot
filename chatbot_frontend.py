@@ -142,7 +142,6 @@ with st.sidebar:
 
 # Application header layout block
 st.title("⚡ Dynamic Intelligence Interface")
-st.caption(f"Secure Thread Routing ID: `{st.session_state['thread_id']}`")
 st.write("---")
 
 # Container rendering logic using custom beautiful HTML templates
