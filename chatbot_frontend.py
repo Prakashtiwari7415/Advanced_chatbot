@@ -63,6 +63,37 @@ st.markdown("""
         color: #F8FAFC !important;
         font-weight: 600;
     }
+      
+    /* Bouncing Dots Typing Indicator */
+    .typing-container {
+        display: inline-flex;
+        align-items: center;
+        background: #222533;
+        padding: 14px 18px;
+        border-radius: 18px;
+        border-bottom-left-radius: 4px;
+        border: 1px solid #31354A;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .dot {
+        height: 8px;
+        width: 8px;
+        background-color: #A0AEC0;
+        border-radius: 50%;
+        display: inline-block;
+        margin: 0 3px;
+        animation: bounce 1.4s infinite ease-in-out both;
+    }
+    
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1.0); }
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -165,7 +196,7 @@ if user_input:
     st.session_state['message_history'].append({'role': 'user', 'content': user_input})
     st.markdown(
         f'<div class="chat-bubble user-bubble">🧑‍💻 <b>You:</b><br>{user_input}</div>', 
-        unsafe_allow_html=True
+        unsafe_allowed_html=True
     )
 
     CONFIG = {
@@ -174,8 +205,20 @@ if user_input:
         "run_name": "chat_turn",
     }
 
-    # 2. Render Assistant response area dynamically using Streamlit markdown injections
+    # 2. Setup a temporary layout placeholder for the typing animation
+    typing_placeholder = st.empty()
+    
+    # Render the bouncing dots animation while initializing the backend stream connection
+    typing_placeholder.markdown(
+        '<div class="typing-container">🤖 &nbsp; <span class="dot"></span><span class="dot"></span><span class="dot"></span></div>', 
+        unsafe_allowed_html=True
+    )
+
+    # 3. Stream the Assistant response
     with st.chat_message('assistant'):
+        # Clear out the typing indicator animation the exact millisecond the text begins streaming
+        typing_placeholder.empty()
+        
         ai_message = st.write_stream(
             message_chunk.content for message_chunk, metadata in chatbot.stream(
                 {'messages': [HumanMessage(content=user_input)]},
@@ -184,5 +227,6 @@ if user_input:
             )
         )
 
+    # 4. Save history and refresh the state
     st.session_state['message_history'].append({'role': 'assistant', 'content': ai_message})
     st.rerun()
