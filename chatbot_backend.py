@@ -7,6 +7,7 @@ from langgraph.graph.message import add_messages
 from dotenv import load_dotenv
 import sqlite3
 
+
 load_dotenv()
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.7)
