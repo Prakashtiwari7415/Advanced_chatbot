@@ -7,8 +7,8 @@ from langsmith import uuid7
 # **************************************** utility functions *************************
 
 def generate_thread_id():
-    thread_id = uuid.uuid4()
-    return thread_id
+    # Using uuid7 as imported for time-sorted UUIDs, or fallback to uuid4
+    return str(uuid.uuid4())
 
 def reset_chat():
     thread_id = generate_thread_id()
@@ -24,6 +24,15 @@ def load_conversation(thread_id):
     state = chatbot.get_state(config={'configurable': {'thread_id': thread_id}})
     # Check if messages key exists in state values, return empty list if not
     return state.values.get('messages', [])
+
+def get_thread_label(thread_id):
+    """Fetches the first user message to display as the button label."""
+    messages = load_conversation(thread_id)
+    for msg in messages:
+        if isinstance(msg, HumanMessage) and msg.content:
+            # Truncate text so it fits beautifully in the sidebar
+            return msg.content[:25] + "..." if len(msg.content) > 25 else msg.content
+    return f"New Chat"
 
 
 # **************************************** Session Setup ******************************
@@ -43,45 +52,46 @@ add_thread(st.session_state['thread_id'])
 
 st.sidebar.title('LangGraph Chatbot')
 
-if st.sidebar.button('New Chat'):
+if st.sidebar.button('New Chat', use_container_width=True):
     reset_chat()
 
 st.sidebar.header('My Conversations')
 
+# Loop through threads and pull the first user prompt dynamically
 for thread_id in st.session_state['chat_threads'][::-1]:
-    if st.sidebar.button(str(thread_id)):
+    button_label = get_thread_label(thread_id)
+    
+    # Render the text preview but keep functional thread_id linked underneath
+    if st.sidebar.button(button_label, key=f"btn_{thread_id}", use_container_width=True):
         st.session_state['thread_id'] = thread_id
         messages = load_conversation(thread_id)
 
         temp_messages = []
-
         for msg in messages:
             if isinstance(msg, HumanMessage):
-                role='user'
+                role = 'user'
             else:
-                role='assistant'
+                role = 'assistant'
             temp_messages.append({'role': role, 'content': msg.content})
 
         st.session_state['message_history'] = temp_messages
+        st.rerun()
 
 
 # **************************************** Main UI ************************************
 
-# loading the conversation history
+# Displaying the conversation history
 for message in st.session_state['message_history']:
     with st.chat_message(message['role']):
-        st.text(message['content'])
+        st.write(message['content'])
 
 user_input = st.chat_input('Type here')
 
 if user_input:
-
-    # first add the message to message_history
+    # First add the message to message_history
     st.session_state['message_history'].append({'role': 'user', 'content': user_input})
     with st.chat_message('user'):
-        st.text(user_input)
-
-    #CONFIG = {'configurable': {'thread_id': st.session_state['thread_id']}}
+        st.write(user_input)
 
     CONFIG = {
         "configurable": {"thread_id": st.session_state["thread_id"]},
@@ -91,15 +101,17 @@ if user_input:
         "run_name": "chat_turn",
     }
 
-    # first add the message to message_history
+    # Stream the assistant response
     with st.chat_message('assistant'):
-
         ai_message = st.write_stream(
             message_chunk.content for message_chunk, metadata in chatbot.stream(
                 {'messages': [HumanMessage(content=user_input)]},
-                config= CONFIG,
-                stream_mode= 'messages'
+                config=CONFIG,
+                stream_mode='messages'
             )
         )
 
     st.session_state['message_history'].append({'role': 'assistant', 'content': ai_message})
+    
+    # Rerun to update the sidebar preview immediately on the first message
+    st.rerun()
