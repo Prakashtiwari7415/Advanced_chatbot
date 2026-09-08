@@ -1,6 +1,6 @@
 import streamlit as st
 from chatbot_backend import chatbot, retrieve_all_threads
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 import uuid
 
 # **************************************** UI Config & Custom Styling *****************
@@ -213,19 +213,43 @@ if user_input:
         '<div class="typing-container">🤖 &nbsp; <span class="dot"></span><span class="dot"></span><span class="dot"></span></div>', 
         unsafe_allow_html=True
     )
-
-    # 3. Stream the Assistant response
-    with st.chat_message('assistant'):
-        # Clear out the typing indicator animation the exact millisecond the text begins streaming
+  # Assistant streaming block
+    with st.chat_message("assistant"):
         typing_placeholder.empty()
-        
-        ai_message = st.write_stream(
-            message_chunk.content for message_chunk, metadata in chatbot.stream(
-                {'messages': [HumanMessage(content=user_input)]},
+        # Use a mutable holder so the generator can set/modify it
+        status_holder = {"box": None}
+
+        def ai_only_stream():
+            for message_chunk, metadata in chatbot.stream(
+                {"messages": [HumanMessage(content=user_input)]},
                 config=CONFIG,
-                stream_mode='messages'
+                stream_mode="messages",
+            ):
+                # Lazily create & update the SAME status container when any tool runs
+                if isinstance(message_chunk, ToolMessage):
+                    tool_name = getattr(message_chunk, "name", "tool")
+                    if status_holder["box"] is None:
+                        status_holder["box"] = st.status(
+                            f"🔧 Using `{tool_name}` …", expanded=True
+                        )
+                    else:
+                        status_holder["box"].update(
+                            label=f"🔧 Using `{tool_name}` …",
+                            state="running",
+                            expanded=True,
+                        )
+
+                # Stream ONLY assistant tokens
+                if isinstance(message_chunk, AIMessage):
+                    yield message_chunk.content
+
+        ai_message = st.write_stream(ai_only_stream())
+
+        # Finalize only if a tool was actually used
+        if status_holder["box"] is not None:
+            status_holder["box"].update(
+                label="✅ Tool finished", state="complete", expanded=False
             )
-        )
 
     # 4. Save history and refresh the state
     st.session_state['message_history'].append({'role': 'assistant', 'content': ai_message})
