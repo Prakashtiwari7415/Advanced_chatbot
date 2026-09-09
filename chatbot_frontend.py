@@ -169,7 +169,6 @@ with st.sidebar:
 
 with st.container(horizontal=True, horizontal_alignment="distribute"):
     st.subheader("Kay..", icon=":material/auto_awesome:", anchor=False)
-    st.badge("RAG ready", icon=":material/verified:", color="violet")
 
 if st.session_state.messages:
     st.caption("Answers can use your knowledge base, live web search, and specialist tools.")
