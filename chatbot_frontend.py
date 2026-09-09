@@ -60,8 +60,7 @@ with st.sidebar:
             st.session_state.thread_id, st.session_state.messages = thread_id, load_thread(thread_id); st.rerun()
 
 st.title("Ask, search, and reason", anchor=False)
-st.caption("Upload PDF, TXT, or Markdown documents to receive grounded answers with citations.")
-if not st.session_state.messages: st.info("Try: “Summarize the uploaded policy” or “What time is it in Asia/Kolkata?”")
+st.caption("Your Personalised Chatbot.....")
 for message in st.session_state.messages:
     with st.chat_message(message["role"]): st.markdown(message["content"])
 if prompt := st.chat_input("Ask a question", submit_mode="disable"):
