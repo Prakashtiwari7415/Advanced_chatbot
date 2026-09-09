@@ -1,6 +1,6 @@
 # Advanced Chatbot
 
-Streamlit chatbot using Gemini and LangGraph, with persistent chat history, local RAG, web/Wikipedia search, calculator, timezone lookup, and an order-status example tool.
+Streamlit chatbot using Gemini and LangGraph, with persistent chat history, local RAG, web/Wikipedia search, calculator, timezone lookup, and an order-status example tool.Integrated with LangSmith
 
 ## Run
 
