@@ -34,7 +34,6 @@ add_thread(st.session_state.thread_id)
 
 with st.sidebar:
     st.title("Advanced Chatbot", anchor=False)
-    st.caption("Gemini + LangGraph + local RAG")
     if st.button("New conversation", icon=":material/add:", type="primary", width="stretch"):
         st.session_state.thread_id, st.session_state.messages = str(uuid.uuid4()), []
         add_thread(st.session_state.thread_id); st.rerun()
