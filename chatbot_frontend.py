@@ -174,7 +174,6 @@ if st.session_state.messages:
     st.caption("Answers can use your knowledge base, live web search, and specialist tools.")
 else:
     st.write("### Hi, I’m Kay..")
-    st.caption("Ask a question, search the web, or upload documents to create your private knowledge base.")
     selected = st.pills(
         "Start with a prompt",
         [
